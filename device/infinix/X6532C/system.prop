@@ -1,0 +1,9 @@
+# Values read from the running device (getprop) and its /vendor build
+ro.hardware.gatekeeper=trustonic
+ro.crypto.volume.filenames_mode=aes-256-cts
+# TWRP keymaster hint: this vendor ships a HIDL keymaster 4.1 HAL
+keymaster_ver=4.1
+ro.vendor.mtk_trustonic_tee_support=1
+ro.vendor.mtk_tee_gp_support=1
+ro.sf.lcd_density=320
+ro.sys.usb.storage.type=mtp

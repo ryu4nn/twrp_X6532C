@@ -1,0 +1,45 @@
+# Recovery fstab for Infinix Smart 9 HD (X6532C)
+# Derived from the stock vendor_boot ramdisk fstab, with the metadata
+# partition corrected to md_udc (mmcblk0p10). The "metadata" by-name node
+# (mmcblk0p11) is not the one Android mounts at /metadata.
+#
+#<src>					<mnt_point>	<type>	<mnt_flags and options>								<fs_mgr_flags>
+system					/system		erofs	ro										wait,slotselect,logical
+system					/system		ext4	ro										wait,slotselect,logical
+system_ext				/system_ext	erofs	ro										wait,slotselect,logical
+system_ext				/system_ext	ext4	ro										wait,slotselect,logical
+vendor					/vendor		erofs	ro										wait,slotselect,logical
+vendor					/vendor		ext4	ro										wait,slotselect,logical
+product					/product	erofs	ro										wait,slotselect,logical
+product					/product	ext4	ro										wait,slotselect,logical
+
+tr_mi					/tr_mi		ext4	ro										wait,slotselect,logical,nofail
+tr_theme				/tr_theme	ext4	ro										wait,slotselect,logical,nofail
+tr_region				/tr_region	ext4	ro										wait,slotselect,logical,nofail
+tr_company				/tr_company	ext4	ro										wait,slotselect,logical,nofail
+tr_carrier				/tr_carrier	ext4	ro										wait,slotselect,logical,nofail
+tr_product				/tr_product	erofs	ro										wait,slotselect,logical,nofail
+tr_preload				/tr_preload	erofs	ro										wait,slotselect,logical,nofail
+
+/dev/block/by-name/md_udc		/metadata	ext4	noatime,nosuid,nodev,discard							wait,check,formattable
+/dev/block/by-name/userdata		/data		f2fs	noatime,nosuid,nodev,discard,noflush_merge,fsync_mode=nobarrier,reserve_root=134217,resgid=1065,inlinecrypt	latemount,wait,check,quota,reservedsize=128M,formattable,resize,readahead_size_kb=512,checkpoint=fs,fileencryption=aes-256-xts:aes-256-cts:v2,keydirectory=/metadata/vold/metadata_encryption,sysfs_path=/sys/devices/platform/soc/11230000.mmc
+
+/dev/block/by-name/tranfs		/tranfs		ext4	noatime,nosuid,nodev,noauto_da_alloc,discard					wait,check,formattable,nofail
+/dev/block/by-name/protect1		/mnt/vendor/protect_f	ext4	noatime,nosuid,nodev,noauto_da_alloc,commit=1,nodelalloc		wait,check
+/dev/block/by-name/protect2		/mnt/vendor/protect_s	ext4	noatime,nosuid,nodev,noauto_da_alloc,commit=1,nodelalloc		wait,check
+/dev/block/by-name/nvdata		/mnt/vendor/nvdata	ext4	noatime,nosuid,nodev,noauto_da_alloc,commit=1,nodelalloc		wait,check
+/dev/block/by-name/nvcfg		/mnt/vendor/nvcfg	ext4	noatime,nosuid,nodev,noauto_da_alloc,commit=1,nodelalloc		wait,check
+/dev/block/by-name/persist		/mnt/vendor/persist	ext4	noatime,nosuid,nodev,noauto_da_alloc,commit=1,nodelalloc		wait,check
+
+/dev/block/by-name/para		/misc		emmc	defaults										defaults
+/dev/block/by-name/frp		/persistent	emmc	defaults										defaults
+/dev/block/by-name/nvram		/nvram		emmc	defaults										defaults
+/dev/block/by-name/proinfo		/proinfo	emmc	defaults										defaults
+/dev/block/by-name/expdb		/expdb		emmc	defaults										defaults
+/dev/block/by-name/seccfg		/seccfg		emmc	defaults										defaults
+/dev/block/by-name/otp			/otp		emmc	defaults										defaults
+/dev/block/by-name/boot_para		/boot_para	emmc	defaults										defaults
+/dev/block/by-name/flashinfo		/flashinfo	emmc	defaults										defaults
+
+/devices/platform/11240000.mmc*		auto		auto	defaults										voldmanaged=sdcard1:auto
+/devices/platform/mt_usb*		auto		ufs	defaults										voldmanaged=usbotg:auto

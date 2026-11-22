@@ -1,0 +1,5 @@
+/twrp/
+/dump/
+/artifacts/
+/out/
+*.log

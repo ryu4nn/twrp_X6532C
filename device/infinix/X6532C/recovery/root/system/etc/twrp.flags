@@ -1,0 +1,56 @@
+# TWRP partition flags for Infinix Smart 9 HD (X6532C)
+# Only partitions that actually exist in /dev/block/by-name on this
+# device are listed. There is no tee1/tee2 and no misc: the equivalents
+# are tee_a/tee_b and para.
+#
+# mount point		fs	type	device						device2	device3	flags
+
+# Bootable images
+/boot			emmc	/dev/block/by-name/boot					flags=display="Boot";slotselect;backup;flashimg
+/vendor_boot		emmc	/dev/block/by-name/vendor_boot				flags=display="Vendor Boot";slotselect;backup;flashimg
+/init_boot		emmc	/dev/block/by-name/init_boot				flags=display="Init Boot";slotselect;backup;flashimg
+/dtbo			emmc	/dev/block/by-name/dtbo					flags=display="DTBO";slotselect;backup;flashimg
+
+# Verified boot
+/vbmeta			emmc	/dev/block/by-name/vbmeta				flags=display="VBMeta";slotselect;backup;flashimg
+/vbmeta_system		emmc	/dev/block/by-name/vbmeta_system			flags=display="VBMeta System";slotselect;backup;flashimg
+/vbmeta_vendor		emmc	/dev/block/by-name/vbmeta_vendor			flags=display="VBMeta Vendor";slotselect;backup;flashimg
+
+# Data
+/metadata		ext4	/dev/block/by-name/md_udc				flags=display="Metadata";backup
+/misc			emmc	/dev/block/by-name/para					flags=display="Misc";backup
+/persist		emmc	/dev/block/by-name/persist				flags=display="Persist";backup
+/persistent		emmc	/dev/block/by-name/frp					flags=display="FRP";backup
+
+# IMEI / modem
+/nvdata			emmc	/dev/block/by-name/nvdata				flags=display="NVData";backup
+/nvcfg			emmc	/dev/block/by-name/nvcfg				flags=display="NVCfg";backup
+/nvram			emmc	/dev/block/by-name/nvram				flags=display="NVRAM";backup
+/protect_f		emmc	/dev/block/by-name/protect1				flags=display="Protect F";backup
+/protect_s		emmc	/dev/block/by-name/protect2				flags=display="Protect S";backup
+/md1img			emmc	/dev/block/by-name/md1img				flags=display="MD1 Image";slotselect;backup
+
+# MediaTek firmware
+/logo			emmc	/dev/block/by-name/logo					flags=display="Logo";slotselect;backup
+/lk			emmc	/dev/block/by-name/lk					flags=display="Little Kernel";slotselect;backup
+/tee			emmc	/dev/block/by-name/tee					flags=display="TEE";slotselect;backup
+/tkv			emmc	/dev/block/by-name/tkv					flags=display="TKV";slotselect;backup
+/spmfw			emmc	/dev/block/by-name/spmfw				flags=display="SPM FW";slotselect
+/scp			emmc	/dev/block/by-name/scp					flags=display="SCP";slotselect
+/sspm			emmc	/dev/block/by-name/sspm					flags=display="SSPM";slotselect
+/gz			emmc	/dev/block/by-name/gz					flags=display="GZ";slotselect
+/tranfs			emmc	/dev/block/by-name/tranfs				flags=display="TranFS";backup
+/expdb			emmc	/dev/block/by-name/expdb				flags=display="ExpDB"
+/otp			emmc	/dev/block/by-name/otp					flags=display="OTP"
+/seccfg			emmc	/dev/block/by-name/seccfg				flags=display="SecCfg"
+/boot_para		emmc	/dev/block/by-name/boot_para				flags=display="Boot Para"
+
+# Removable storage
+/external_sd		auto	/dev/block/mmcblk1p1	/dev/block/mmcblk1	flags=display="MicroSD";storage;wipeingui;removable;backup=0
+/usb_otg		auto	/dev/block/sda1		/dev/block/sda		flags=display="USB OTG";storage;wipeingui;removable;backup=0
+
+# Flashable logical partitions
+/system_image		emmc	/dev/block/mapper/system				flags=display="System";backup=1;flashimg=1;slotselect
+/vendor_image		emmc	/dev/block/mapper/vendor				flags=display="Vendor";backup=1;flashimg=1;slotselect
+/system_ext_image	emmc	/dev/block/mapper/system_ext				flags=display="System Ext";backup=1;flashimg=1;slotselect
+/product_image		emmc	/dev/block/mapper/product				flags=display="Product";backup=1;flashimg=1;slotselect

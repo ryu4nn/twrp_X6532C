@@ -1,0 +1,146 @@
+# Trustonic TEE + keymaster/gatekeeper stack, required to decrypt /data.
+#
+# /data is f2fs with fileencryption=aes-256-xts:aes-256-cts:v2 and
+# keydirectory=/metadata/vold/metadata_encryption, and /metadata (md_udc) is
+# wrappedkey: the keys are sealed by the Trustonic TEE, so a software keymaster
+# cannot unwrap them. TWRP mounts the real /vendor only while reading its props
+# and the vendor fstab, and unmounts it before decrypting, so these HALs, their
+# libraries and the Trustonic TAs are shipped inside this ramdisk at the same
+# paths stock uses.
+#
+# Service names, arguments, user/group/class/interface lines are stock's
+# (/vendor/etc/init/{trustonic.rc,android.hardware.keymaster@4.1-service.trustonic.rc,
+# android.hardware.gatekeeper@1.0-service.rc,
+# vendor.mediatek.hardware.keymaster_attestation@1.1-service.rc}). Two changes:
+#   - seclabel u:r:recovery:s0, because stock's init contexts do not exist in
+#     recovery (recovery is permissive in AOSP policy);
+#   - the services are disabled and started explicitly below instead of via
+#     class_start, because recovery has no late-fs stage.
+# The -r list is stock's full list; files that this vendor image does not ship
+# are skipped by mcDriverDaemon, exactly as on a stock boot.
+
+on init
+    # init's mkdir does not create parents; /mnt/vendor is not in the ramdisk.
+    mkdir /mnt 0755 root root
+    mkdir /mnt/vendor 0771 system system
+    mkdir /mnt/vendor/persist 0771 system system
+
+on post-fs
+    # TWRP's own init.rc exports only the 64-bit paths; this device is 32-bit.
+    # Exporting here (rather than in on init) wins because init.rc's export
+    # runs after this file's on init section.
+    export LD_LIBRARY_PATH /system/lib:/vendor/lib:/vendor/lib/hw
+
+    # Stock mounts /persist at /mnt/vendor/persist and passes that path to
+    # mcDriverDaemon as --P1. Recovery's init.rc has no mount_all, so mount it
+    # here after ueventd has had time to publish the by-name node.
+    exec -- /system/bin/sh -c "for i in 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20; do [ -e /dev/block/by-name/persist ] && exit 0; sleep 0.2; done"
+    mount ext4 /dev/block/by-name/persist /mnt/vendor/persist rw
+
+    chown system system /mnt/vendor/persist
+    chmod 0771 /mnt/vendor/persist
+    restorecon /mnt/vendor/persist
+
+    mkdir /mnt/vendor/persist/mcRegistry 0771 system system
+    mkdir /mnt/vendor/persist/paytrigger 0771 system system
+    chown system system /mnt/vendor/persist/paytrigger
+    chmod 0777 /mnt/vendor/persist/paytrigger
+    mkdir /mnt/vendor/persist/startPara 0771 system system
+    chown system system /mnt/vendor/persist/startPara
+    chmod 0777 /mnt/vendor/persist/startPara
+    mkdir /tranfs 0771 system system
+    mkdir /tranfs/startPara 0771 system system
+    chown system system /tranfs/startPara
+    chmod 0777 /tranfs/startPara
+
+    # TWRP's module loader only runs when the TWRP binary mounts partitions,
+    # which is after this point; mcDriverDaemon needs /dev/mobicore now.
+    exec -- /system/bin/insmod /lib/modules/gpapi.ko
+    exec -- /system/bin/insmod /lib/modules/mcDrvModule.ko
+    exec -- /system/bin/sh -c "for i in 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20; do [ -e /dev/mobicore ] && exit 0; sleep 0.2; done"
+
+    # /vendor/etc/ueventd.rc carries these modes on a normal boot, but
+    # ueventd runs before the real /vendor is mounted in recovery, so ueventd.rc
+    # never sees that file and the nodes come up as root:root 0600.
+    chown system system /dev/mobicore
+    chmod 0600 /dev/mobicore
+    chown system system /dev/mobicore-user
+    chmod 0666 /dev/mobicore-user
+
+    setprop crypto.ready 1
+
+service mobicore /vendor/bin/mcDriverDaemon --sfs-reformat --P1 /mnt/vendor/persist/mcRegistry \
+    -r /vendor/app/mcRegistry/06090000000000000000000000000000.drbin \
+    -r /vendor/app/mcRegistry/020f0000000000000000000000000000.drbin \
+    -r /vendor/app/mcRegistry/05120000000000000000000000000000.drbin \
+    -r /vendor/app/mcRegistry/05120000000000000000000000000001.drbin \
+    -r /vendor/app/mcRegistry/05160000000000000000000000000000.drbin \
+    -r /vendor/app/mcRegistry/020b0000000000000000000000000000.drbin \
+    -r /vendor/app/mcRegistry/05070000000000000000000000000000.drbin \
+    -r /vendor/app/mcRegistry/030b0000000000000000000000000000.drbin \
+    -r /vendor/app/mcRegistry/03100000000000000000000000000000.drbin \
+    -r /vendor/app/mcRegistry/030c0000000000000000000000000000.drbin \
+    -r /vendor/app/mcRegistry/031c0000000000000000000000000000.drbin \
+    -r /vendor/app/mcRegistry/032c0000000000000000000000000000.drbin \
+    -r /vendor/app/mcRegistry/033c0000000000000000000000000000.drbin \
+    -r /vendor/app/mcRegistry/034c0000000000000000000000000000.drbin \
+    -r /vendor/app/mcRegistry/035c0000000000000000000000000000.drbin \
+    -r /vendor/app/mcRegistry/036c0000000000000000000000000000.drbin \
+    -r /vendor/app/mcRegistry/037c0000000000000000000000000000.drbin \
+    -r /vendor/app/mcRegistry/40188311faf343488db888ad39496f9a.drbin \
+    -r /vendor/app/mcRegistry/090b0000000000000000000000000000.drbin \
+    -r /vendor/app/mcRegistry/0f5eed3c3b5a47afacca69a84bf0efad.drbin \
+    -r /vendor/app/mcRegistry/07060000000000000000000000007169.drbin \
+    -r /vendor/app/mcRegistry/4be4f7dc1f2c11e5b5f7727283247c7f.drbin \
+    -r /vendor/app/mcRegistry/08070000000000000000000000008270.drbin \
+    -r /vendor/app/mcRegistry/07070000000000000000000000000000.drbin \
+    -r /vendor/app/mcRegistry/07407000000000000000000000000000.drbin \
+    -r /vendor/app/mcRegistry/9073f03a9618383bb1856eb3f990babd.drbin \
+    -r /vendor/app/mcRegistry/07090000000000000000000000000000.drbin \
+    -r /vendor/app/mcRegistry/6b3f5fa0f8cf55a7be2582587d62d63a.drbin \
+    -r /vendor/app/mcRegistry/5020170115e016302017012521300000.drbin
+    class main
+    user system
+    group system
+    priority -20
+    seclabel u:r:recovery:s0
+    disabled
+
+service vendor.keymaster-4-1-trustonic /vendor/bin/hw/android.hardware.keymaster@4.1-service.trustonic
+    class early_hal
+    user system
+    group system drmrpc
+    seclabel u:r:recovery:s0
+    disabled
+
+service vendor.gatekeeper-1-0 /vendor/bin/hw/android.hardware.gatekeeper@1.0-service
+    interface android.hardware.gatekeeper@1.0::IGatekeeper default
+    class hal
+    user system
+    group system
+    seclabel u:r:recovery:s0
+    disabled
+
+service keymaster_attestation-1-1 /vendor/bin/hw/vendor.mediatek.hardware.keymaster_attestation@1.1-service
+    interface vendor.mediatek.hardware.keymaster_attestation@1.0::IKeymasterDevice default
+    interface vendor.mediatek.hardware.keymaster_attestation@1.1::IKeymasterDevice default
+    class hal
+    user system
+    group system
+    seclabel u:r:recovery:s0
+    disabled
+
+# hwservicemanager.ready is what stock waits on; crypto.ready is the fallback
+# for the case recovery's hwservicemanager does not advertise it. Both actions
+# are idempotent, so whichever fires first wins.
+on property:hwservicemanager.ready=true
+    start mobicore
+    start vendor.keymaster-4-1-trustonic
+    start vendor.gatekeeper-1-0
+    start keymaster_attestation-1-1
+
+on property:crypto.ready=1
+    start mobicore
+    start vendor.keymaster-4-1-trustonic
+    start vendor.gatekeeper-1-0
+    start keymaster_attestation-1-1
