@@ -11,6 +11,24 @@ The device tree is carried over unchanged from the working OrangeFox build: same
 blobs, same fstab, same Trustonic TEE stack, same VINTF fix. Only the recovery
 base changed, from OrangeFox 12.1 to stock TWRP 3.7.1 (`android-12.1`).
 
+## Ready-made image
+
+[`twrp-3.7.1-crypto-v1`](https://github.com/ryu4nn/twrp_X6532C/releases/tag/twrp-3.7.1-crypto-v1):
+
+```
+vendor_boot.img  67,108,864 bytes (exactly 64 MiB)
+sha256 43b84c2a17ebbfa03cda883e0debb7005429dbe784520efcbe59bef4fef81c67
+```
+
+Flashes as `vendor_boot`; reports itself as `3.7.1_12-X6532C`.
+
+## `3.7.1_12` or `3.7.1_14`?
+
+Both are TWRP 3.7.1 — the suffix is the Android base. This device's vendor
+partition is Android 12 / VNDK 31, so `_12` is the matching base. `_14.1` is
+available as a workflow option, but it adds an API 34 recovery on top of a VNDK 31
+vendor, which is extra risk with no functional gain.
+
 ## Decryption
 
 `/data` is FBE with metadata encryption (`keydirectory=/metadata/vold/metadata_encryption`,
